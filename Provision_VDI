@@ -1,0 +1,13 @@
+Connect-AzAccount
+Select-AzSubscription -SubscriptionId 'SUBSCRIPTION_ID'
+$resourceGroup = 'myResourceGroup'  # Resource group 
+$location = 'EastUS'  
+$vnet = Get-AzVirtualNetwork -Name 'myVNet' -ResourceGroupName $resourceGroup 
+$subnet = Get-AzVirtualNetworkSubnetConfig -Name 'mySubnet' -VirtualNetwork $vnet
+$nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroup -Location $location -Name 'myNsg'
+$hostPool = New-AzWvdHostPool -ResourceGroupName $resourceGroup -Name 'myHostPool' -Location $location -HostPoolType 'Pooled' -LoadBalancerType 'BreadthFirst'
+$appGroup = New-AzWvdApplicationGroup -ResourceGroupName $resourceGroup -Name 'myAppGroup' -Location $location -HostPoolArmPath $hostPool.Id -FriendlyName 'myAppGroup'
+$workspace = New-AzWvdWorkspace -ResourceGroupName $resourceGroup -Name 'myWorkspace' -Location $location -FriendlyName 'myWorkspace' -ApplicationGroupReference $appGroup.Id
+Add-AzWvdUser -ResourceGroupName $resourceGroup -HostPoolName 'myHostPool' -Name 'user1' -Type 'Upn' -UserPrincipalName 'user1@contoso.com'
+
+New-AzWvdApplication -ResourceGroupName $resourceGroup -Name 'app1' -FilePath 'C:\app1.exe' -IconPath 'C:\app1.ico' -IconIndex 0 -CommandLineSetting 'Allow' -GroupName 'DesktopApplicationGroup'
